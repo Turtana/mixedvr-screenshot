@@ -14,7 +14,7 @@ import pyautogui
 # pyautogui has to be installed
 # SteamVR toolbar box thing can't be minimized
 # SteamVR live view has to be open (no need to be active though)
-# Your Steam profile has to be public (to get what you're playing through API)
+# Your Steam profile has to be public (to get what you're playing through API) (not implemented yet, ignore this)
 
 # -- Config -- #
 steam_screenshot_folder = "C:\\Program Files (x86)\\Steam\\userdata\\88692041\\760\\remote" # Check this. It probably varies by user.
@@ -22,14 +22,12 @@ svr_window_title = "SteamVR-tila" # The window title of SteamVR toolbar thing. E
 svr_view_title = "VR-näkymä" # The window title of SteamVR live view. Edit according to localization.
 screenshot_time_buffer = 2 # How many seconds of screenshots you want to overwrite when you take a custom screenshot. DO NOT SET THIS TO A HIGH VALUE.
 
-steam_config_file = open("steamdata.txt")
-lines = steam_config_file.readlines()
-steam_profile_id = lines[0]
-steam_api_key = lines[1]
-steam_config_file.close()
+# steam_config_file = open("steamdata.txt")
+# lines = steam_config_file.readlines()
+# steam_profile_id = lines[0]
+# steam_api_key = lines[1]
+# steam_config_file.close()
 # ------------ #
-
-current_game_folder = "\\250820\\screenshots"
 
 def take_screenshot(img_paths):
 
@@ -62,6 +60,7 @@ def take_screenshot(img_paths):
     time.sleep(.05)
     screenshot = pyautogui.screenshot()
     for path in img_paths:
+        print("saved screenshot to", path)
         screenshot.save(path)
 
     # returns to the beginning
@@ -80,7 +79,6 @@ def get_current_game():
 
 # Optimization. If VR is not active, check the situation every 10 seconds instead of 10 times a second. Move to higher frequency if user starts VR
 # 10 secs is surely enough to boot up the screenshot service
-# TODO: testaa että tää toimii
 def vr_watch():
     while True:
         if vr_is_active():
@@ -88,13 +86,12 @@ def vr_watch():
         time.sleep(10)
 
 def screenshot_watch():
-    img_list = list(Path(steam_screenshot_folder + current_game_folder).rglob('*'))
+    # current_game_folder = "\\250820\\screenshots"
+    img_list = list(Path(steam_screenshot_folder).rglob('*'))
     list_size = len(img_list)
 
-    counter = 0
-
     while True:
-        img_list = list(Path(steam_screenshot_folder + current_game_folder).rglob('*'))
+        img_list = list(Path(steam_screenshot_folder).rglob('*'))
 
         # detect screenshot taken
         if len(img_list) > list_size:
@@ -112,16 +109,14 @@ def screenshot_watch():
             take_screenshot(img_paths)
 
         time.sleep(.1)
-        counter += 1
 
-        # check for game every... two seconds? Note that this is an internet request and the program waits for a response.
-        if counter % 20 == 0:
-            game = get_current_game()
-            if game:
-                current_game_folder = "\\" + game + "\\screenshots"
-            else:
-                current_game_folder = "\\250820\\screenshots" # SteamVR folder
-
+        # # check for game every... two seconds? Note that this is an internet request and the program waits for a response.
+        # if counter % 20 == 0:
+        #     game = get_current_game()
+        #     if game:
+        #         current_game_folder = "\\" + game + "\\screenshots"
+        #     else:
+        #         current_game_folder = "\\250820\\screenshots" # SteamVR folder
 
         # go back to the "sleep mode"
         if not vr_is_active():
